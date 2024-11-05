@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Clock, PoundSterling } from 'lucide-react'
+import { Clock, PoundSterling, ArrowRight } from 'lucide-react'
 import { LucideIcon } from 'lucide-react'
 
 interface ServiceCardProps {
@@ -17,12 +17,11 @@ interface ServiceCardProps {
     id: string
     title: string
     description: string
-    icon: LucideIcon
+    icon: LucideIcon | string
     duration: string
     price: number
   }
   isSelected: boolean
-  isLocationSelected: boolean
   onSelect: () => void
   onBook: () => void
 }
@@ -30,22 +29,31 @@ interface ServiceCardProps {
 export default function ServiceCard({ 
   service, 
   isSelected, 
-  isLocationSelected, 
   onSelect, 
   onBook 
 }: ServiceCardProps) {
-  const Icon = service.icon
+  const IconComponent = service.icon as LucideIcon
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    onSelect()
+  }
+
+  const handleBookClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onBook()
+  }
 
   return (
     <Card 
       className={`cursor-pointer transition-all duration-300 ${
         isSelected ? 'ring-2 ring-primary shadow-lg' : 'hover:shadow-md'
       }`}
-      onClick={onSelect}
+      onClick={handleClick}
     >
       <CardHeader>
         <CardTitle className="flex items-center space-x-3">
-          <Icon className="h-6 w-6 text-primary" />
+          {IconComponent && <IconComponent className="h-6 w-6 text-primary" />}
           <span>{service.title}</span>
         </CardTitle>
         <CardDescription>{service.description}</CardDescription>
@@ -65,13 +73,10 @@ export default function ServiceCard({
       <CardFooter>
         <Button 
           className="w-full"
-          disabled={!isLocationSelected}
-          onClick={(e) => {
-            e.stopPropagation()
-            onBook()
-          }}
+          onClick={handleBookClick}
         >
-          Book Now
+          Select Service
+          <ArrowRight className="ml-2 h-5 w-5" />
         </Button>
       </CardFooter>
     </Card>

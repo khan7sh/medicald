@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Car,
   Truck,
@@ -9,13 +10,16 @@ import {
   Forklift,
   Home as HomeIcon,
   Plane,
-  Horse,
-  Motorcycle,
+  ArrowRight,
+  MapPin,
+  Calendar
 } from 'lucide-react'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import LocationSelector from '@/components/booking/LocationSelector'
 import ServiceCard from '@/components/booking/ServiceCard'
+import { Button } from '@/components/ui/button'
+import ProgressSteps from '@/components/booking/ProgressSteps'
 
 const services = [
   {
@@ -78,7 +82,7 @@ const services = [
     id: 'jockey',
     title: 'Jockey Medicals',
     description: 'Complete medical assessment for jockeys',
-    icon: Horse,
+    icon: HomeIcon,
     duration: '1 hr',
     price: 150
   },
@@ -86,7 +90,7 @@ const services = [
     id: 'racing',
     title: 'National Motor/Bike Racing Medical',
     description: 'Your full motor/bike racing Medical including Eye test',
-    icon: Motorcycle,
+    icon: HomeIcon,
     duration: '15 min',
     price: 80
   },
@@ -101,11 +105,14 @@ const services = [
 ]
 
 export default function BookPage() {
-  const [selectedLocation, setSelectedLocation] = useState('')
-  const [selectedService, setSelectedService] = useState('')
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [selectedService, setSelectedService] = useState(searchParams.get('service') || '')
 
-  const handleBooking = () => {
-    console.log('Booking:', { selectedLocation, selectedService })
+  const handleServiceSelect = (serviceId: string) => {
+    setSelectedService(serviceId)
+    const selectedServiceDetails = services.find(s => s.id === serviceId)
+    router.push(`/locations?service=${serviceId}&price=${selectedServiceDetails?.price}&title=${encodeURIComponent(selectedServiceDetails?.title || '')}`)
   }
 
   return (
@@ -113,26 +120,25 @@ export default function BookPage() {
       <Header />
       <main className="py-24">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-4xl font-extrabold gradient-text text-center mb-16">Book Your Medical Assessment</h1>
+          <div className="max-w-4xl mx-auto">
+            <ProgressSteps currentStep={1} />
 
-          <div className="max-w-xl mx-auto mb-16">
-            <LocationSelector
-              selectedLocation={selectedLocation}
-              onLocationChange={setSelectedLocation}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {services.map((service) => (
-              <ServiceCard
-                key={service.id}
-                service={service}
-                isSelected={selectedService === service.id}
-                isLocationSelected={!!selectedLocation}
-                onSelect={() => setSelectedService(service.id)}
-                onBook={handleBooking}
-              />
-            ))}
+            <div className="text-center">
+              <h1 className="text-4xl font-extrabold gradient-text mb-4">Select Your Service</h1>
+              <p className="text-lg text-muted-foreground">Choose the type of medical assessment you need</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+              {services.map((service) => (
+                <ServiceCard
+                  key={service.id}
+                  service={service}
+                  isSelected={selectedService === service.id}
+                  isLocationSelected={true}
+                  onSelect={() => handleServiceSelect(service.id)}
+                  onBook={() => handleServiceSelect(service.id)}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </main>
